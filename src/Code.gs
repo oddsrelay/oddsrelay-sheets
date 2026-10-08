@@ -89,7 +89,7 @@ function ODDSRELAY_ODDS(type, sports, bookmakers, exchanges, markets, max_tokens
 }
 
 /**
- * Sport and competition keys, with the market keys seen under each.
+ * Sport and competition keys, and the market keys each one carries.
  *
  * @return Rows with a header.
  * @customfunction

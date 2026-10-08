@@ -52,7 +52,7 @@ not show it again. **Clear key** removes it.
 | Formula | Route | Returns |
 |---|---|---|
 | `=ODDSRELAY_ODDS(type, sports, bookmakers, exchanges, markets, max_tokens)` | `GET /v2/odds/{type}` | A matched board, one row per back or lay offer |
-| `=ODDSRELAY_SPORTS()` | `GET /v2/sports` | Sport and competition keys, with the market keys seen under each |
+| `=ODDSRELAY_SPORTS()` | `GET /v2/sports` | Sport and competition keys, and the market keys each one carries |
 | `=ODDSRELAY_BOOKMAKERS()` | `GET /v2/bookmakers` | Bookmaker and exchange keys |
 
 Each formula returns a table with a header row, which fills the empty cells below and to its right.
@@ -75,8 +75,8 @@ A board's columns:
 |---|---|
 | Commence time | The start time as the API sends it: ISO 8601, in UTC |
 | Sport, Event | The competition's title; the two sides, or the course for racing |
-| Market, Outcome, Line | The market key, the selection, and the line on line markets |
-| Side | `back` or `lay`; on `each-way` and `extra-place`, `lay win` and `lay place` |
+| Market, Outcome, Line | The market key, the selection, and the line where the market has one |
+| Side | `back` or `lay`; for the `each-way` and `extra-place` boards, `lay win` and `lay place` |
 | Venue | The bookmaker or exchange key |
 | Price, Available | The decimal price; on a lay, the money available at that price |
 | Places, Place fraction | Each-way terms, where the board has them |
