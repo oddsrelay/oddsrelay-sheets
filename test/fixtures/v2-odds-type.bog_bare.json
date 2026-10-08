@@ -1,0 +1,45 @@
+[
+  {
+    "event_id": "or_evt_58ab94d71497",
+    "sport_key": "horse_racing",
+    "sport_title": "Horse Racing",
+    "commence_time": "2026-09-17T12:30:00Z",
+    "venue": "Ayr",
+    "markets": [
+      {
+        "key": "win",
+        "outcomes": [
+          {
+            "name": "Bassrah",
+            "back": [
+              {
+                "bookmaker": "ladbrokes",
+                "price": 4.0,
+                "link": "https://www.ladbrokes.com/en/sports/event/258542357"
+              },
+              {
+                "bookmaker": "betfred",
+                "price": 4.0,
+                "link": "https://www.betfred.com/sports/horse-racing/event/36917738"
+              }
+            ],
+            "lay": [
+              {
+                "exchange": "betfair_exchange",
+                "price": 4.3,
+                "available": 17.26,
+                "link": "https://www.betfair.com/exchange/plus/horse-racing/market/1.262474543"
+              },
+              {
+                "exchange": "smarkets",
+                "price": 4.4,
+                "available": 75.93,
+                "link": "https://smarkets.com/sport/horse-racing/ayr/2026/09/17/13-30/45322266/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

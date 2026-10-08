@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font: 13px/1.5 Arial, sans-serif; margin: 12px; }
+      label { display: block; font-weight: bold; margin-top: 12px; }
+      input { box-sizing: border-box; width: 100%; padding: 6px; margin: 6px 0 10px; }
+      button { padding: 6px 12px; margin-right: 6px; }
+    </style>
+  </head>
+  <body>
+    <p>Paste your OddsRelay API key. It is kept in your own Apps Script settings for this add-on, never in the
+      spreadsheet, and it is not shown again here.</p>
+    <label for="key">API key</label>
+    <input id="key" type="password" autocomplete="off" spellcheck="false">
+    <button id="save">Save key</button>
+    <button id="clear">Clear key</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <p>Formulas in a spreadsheet use its owner's saved key, so anyone who can edit it can make calls on that key.</p>
+    <p>No key yet? Sign up at <a href="https://app.oddsrelay.io/signup" target="_blank" rel="noopener">app.oddsrelay.io</a>.</p>
+    <script>
+      var input = document.getElementById('key');
+      var status = document.getElementById('status');
+      function show(text) { status.textContent = text; }
+      function run(name, arg) {
+        show('Working...');
+        google.script.run
+          .withSuccessHandler(show)
+          .withFailureHandler(function (e) { show(e && e.message ? e.message : 'Something went wrong. Try again.'); })[name](arg);
+      }
+      document.getElementById('save').onclick = function () {
+        var value = input.value;
+        input.value = '';
+        run('saveKey', value);
+      };
+      document.getElementById('clear').onclick = function () { run('clearKey'); };
+      run('keyStatus');
+    </script>
+  </body>
+</html>
