@@ -21,13 +21,14 @@
     <p>No key yet? Sign up at <a href="https://app.oddsrelay.io/signup" target="_blank" rel="noopener">app.oddsrelay.io</a>.</p>
     <script>
       var input = document.getElementById('key');
-      var status = document.getElementById('status');
-      function show(text) { status.textContent = text; }
+      var note = document.getElementById('status');
+      function show(text) { note.textContent = text; }
       function run(name, arg) {
         show('Working...');
-        google.script.run
+        var runner = google.script.run
           .withSuccessHandler(show)
-          .withFailureHandler(function (e) { show(e && e.message ? e.message : 'Something went wrong. Try again.'); })[name](arg);
+          .withFailureHandler(function (e) { show(e && e.message ? e.message : 'Something went wrong. Try again.'); });
+        if (arg === undefined) runner[name](); else runner[name](arg);
       }
       document.getElementById('save').onclick = function () {
         var value = input.value;

@@ -213,6 +213,30 @@ test('sidebar: a refused key is not saved; status never shows the key', () => {
   assert.equal(ok.props.size, 0);
 });
 
+test('sidebar page: its buttons reach the server functions and the field is emptied', () => {
+  const server = addon({ key: null });
+  const el = (id) => ({ id, value: '', textContent: '', onclick: null });
+  const els = { key: el('key'), status: el('status'), save: el('save'), clear: el('clear') };
+  const run = {
+    withSuccessHandler(fn) { this.ok = fn; return this; },
+    withFailureHandler(fn) { this.fail = fn; return this; },
+  };
+  for (const name of ['saveKey', 'clearKey', 'keyStatus']) run[name] = (arg) => run.ok(server.ctx[name](arg));
+  const page = fs.readFileSync(path.join(src, 'Sidebar.html'), 'utf8');
+  vm.runInNewContext(page.match(/<script>([\s\S]*?)<\/script>/)[1], {
+    document: { getElementById: (id) => els[id] },
+    google: { script: { run } },
+  });
+  assert.equal(els.status.textContent, 'No key saved yet.');
+  els.key.value = KEY;
+  els.save.onclick();
+  assert.equal(els.key.value, '');
+  assert.equal(els.status.textContent, 'Key saved. The API accepted it.');
+  els.clear.onclick();
+  assert.equal(els.status.textContent, 'Key cleared.');
+  assert.equal(server.props.size, 0);
+});
+
 test('manifest, menu and source: narrow scopes, one host, real handlers, no logging', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(src, 'appsscript.json'), 'utf8'));
   assert.equal(manifest.runtimeVersion, 'V8');
