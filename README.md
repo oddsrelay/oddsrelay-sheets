@@ -34,8 +34,9 @@ choose **Advanced**, then go on to OddsRelay.
 
 ### Or copy the template
 
-A template spreadsheet with the script already in it skips the steps above: open its link and choose **Make a
-copy**. The copy and its script are yours. The template link is added here once it is published.
+A [template spreadsheet](https://docs.google.com/spreadsheets/d/1mTlpfDzyQO6CRlqke6uXvGOsv3145VXWSV8vq63kOd4/copy)
+with the script already in it skips the steps above: open the link and choose **Make a copy**. The copy and its
+script are yours, and the first run asks for the same permissions.
 
 ## Your API key
 
