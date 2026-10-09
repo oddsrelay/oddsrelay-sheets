@@ -4,16 +4,8 @@ Formulas that bring data from the [OddsRelay API](https://oddsrelay.io/docs) int
 sport keys and bookmaker keys. The API serves bookmaker and exchange odds for the UK & Ireland. Each person keeps
 their own API key in their own Apps Script settings, never in the spreadsheet.
 
-> **Not yet run in Google.** This first version was written and tested in Node, against the examples in the API
-> description, with Google's services stubbed. It has not run in the Apps Script runtime yet. Only a real sheet can
-> confirm these parts:
->
-> - how `UrlFetchApp` hands back a gzip reply (the script decompresses it only if it still starts with the gzip header)
-> - the menu under Extensions, the sidebar and the refresh item
-> - the cache (`CacheService`) inside formulas
-> - that formulas in a shared spreadsheet read the owner's saved key, as Google's documentation says
->
-> If something misbehaves, please report it in this repository's issues.
+Tested in Google Sheets on 9 Oct 2026: the three formulas, the sidebar and the token cap. If something misbehaves,
+please report it in this repository's issues.
 
 ## Install
 
