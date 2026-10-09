@@ -148,11 +148,6 @@ function isGzip_(bytes) {
   return bytes.length > 1 && (bytes[0] & 0xff) === 0x1f && (bytes[1] & 0xff) === 0x8b;
 }
 
-/** Bytes (signed or not) to lowercase hex. */
-function hex_(bytes) {
-  return Array.prototype.map.call(bytes, function (b) { return ('0' + (b & 0xff).toString(16)).slice(-2); }).join('');
-}
-
 /** Text with every copy of the key replaced. */
 function redact_(text, key) {
   return key ? String(text).split(key).join('[hidden]') : String(text);

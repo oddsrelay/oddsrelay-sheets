@@ -41,7 +41,8 @@ copy**. The copy and its script are yours. The template link is added here once 
 
 Sign up at [app.oddsrelay.io](https://app.oddsrelay.io/signup) and copy your key from the dashboard. In the
 spreadsheet, choose **Extensions > OddsRelay > Set API key**, paste it and press **Save key**. The add-on checks the
-key with one call to `/v2/usage`, which costs no tokens, and does not save a key the API refuses.
+key with one call to `/v2/usage`, which costs no tokens, and does not save a key the API refuses. A browser key is
+tied to one website and cannot be used here, so save a server key.
 
 The key is kept in your Apps Script user properties for this script, which only your Google account can read. It is
 never written to a cell, the document or a log, it travels only in the `Authorization` header, and the sidebar does
@@ -78,10 +79,10 @@ A board's columns:
 | Market, Outcome, Line | The market key, the selection, and the line where the market has one |
 | Side | `back` or `lay`; for the `each-way` and `extra-place` boards, `lay win` and `lay place` |
 | Venue | The bookmaker or exchange key |
-| Price, Available | The decimal price; on a lay, the money available at that price |
+| Price, Available | The decimal price; for lay rows, the amount the exchange shows at that price |
 | Places, Place fraction | Each-way terms, where the board has them |
 | Dutch id | On `dutching`, the legs of one dutch share it |
-| Link, Event id | The venue's page for the event; the API's event id |
+| Link, Event id | A link to the event on the bookmaker's or exchange's site; the API's event id |
 
 The rows are the API's data as sent. The add-on adds no calculations of its own.
 
@@ -134,7 +135,7 @@ The add-on sends nothing anywhere else, and keeps nothing but your key and the b
 ## Develop
 
 `src/` holds the four Apps Script files. `Logic.js` makes no Google calls. `test/sheets.test.js` runs it together
-with `Code.gs` in Node, with Google's services stubbed, on examples from the API description. Node 20 or later, no
+with `Code.gs` in Node, with Google's services stubbed, on examples from the API description. Node 22 or later, no
 dependencies:
 
 ```sh

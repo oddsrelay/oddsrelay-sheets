@@ -45,6 +45,7 @@ function addon({ key = KEY, reply = () => response(200, '{}') } = {}) {
       DigestAlgorithm: { SHA_256: 'SHA_256' },
       Charset: { UTF_8: 'UTF_8' },
       computeDigest: (alg, value) => Array.from(new Int8Array(crypto.createHash('sha256').update(value).digest())),
+      base64EncodeWebSafe: (bytes) => Buffer.from(bytes).toString('base64url'),
       ungzip: (blob) => ({ getDataAsString: () => zlib.gunzipSync(blob.bytes).toString('utf8') }),
       sleep: (ms) => slept.push(ms),
     },
@@ -119,6 +120,11 @@ test('a board formula quotes first, then fetches with the key in the header only
     assert.equal(c.options.muteHttpExceptions, true);
     assert.ok(!c.url.includes(KEY));
   }
+
+  const all = addon({ reply: (url) => response(200, url.includes('quote=true') ? quote : board) });
+  all.ctx.ODDSRELAY_ODDS('standard', 'soccer_epl', 'bet365,ladbrokes', 'betfair_exchange', 'h2h', '');
+  assert.equal(all.calls[0].url, 'https://api.oddsrelay.io/v2/odds/standard?sports=soccer_epl'
+    + '&bookmakers=bet365%2Cladbrokes&exchanges=betfair_exchange&markets=h2h&quote=true');
 });
 
 test('a quote above the cap is refused and nothing else is fetched', () => {
@@ -128,6 +134,10 @@ test('a quote above the cap is refused and nothing else is fetched', () => {
   assert.throws(() => ctx.ODDSRELAY_ODDS('standard', 'soccer', '', '', '', 0), /above the cap of 0/);
   ctx.ODDSRELAY_ODDS('standard', 'soccer', '', '', '', 900);
   assert.equal(calls.length, 4);
+
+  const noCost = addon({ reply: () => response(200, '{}') });
+  assert.throws(() => noCost.ctx.ODDSRELAY_ODDS('bog', '', '', '', '', ''), /without a cost/);
+  assert.equal(noCost.calls.length, 1);
 });
 
 test('the cache: a repeat is not fetched, another key is, and no key is stored', () => {
@@ -156,6 +166,8 @@ test('error cells: no key, refused key, 402, rate limits; the key never shows', 
   assert.throws(() => errorReply(429, '', { 'retry-after': '30' }).ctx.ODDSRELAY_SPORTS(), /Try again in 30 seconds/);
   const echo = JSON.stringify({ error: { code: 'bad_request', message: `odd value ${KEY}` } });
   assert.throws(() => errorReply(400, echo).ctx.ODDSRELAY_SPORTS(), (e) => !e.message.includes(KEY) && /\[hidden\]/.test(e.message));
+  const down = addon({ reply: () => { throw new Error(`boom ${KEY}`); } });
+  assert.throws(() => down.ctx.ODDSRELAY_SPORTS(), (e) => /could not reach the API/.test(e.message) && !e.message.includes(KEY));
 
   const filter = addon();
   assert.throws(() => filter.ctx.ODDSRELAY_ODDS('standard', KEY, '', '', '', ''), /holds your API key/);
@@ -201,6 +213,9 @@ test('sidebar: a refused key is not saved; status never shows the key', () => {
   assert.equal(refused.props.size, 0);
   assert.match(refused.ctx.saveKey('has a space'), /does not look like a key/);
   assert.equal(refused.calls.length, 1);
+  const browserKey = addon({ key: null, reply: () => response(403, '{"error":{"code":"origin_not_allowed"}}') });
+  assert.match(browserKey.ctx.saveKey(KEY), /not saved.*origin_not_allowed/);
+  assert.equal(browserKey.props.size, 0);
 
   const ok = addon({ key: null });
   assert.equal(ok.ctx.keyStatus(), 'No key saved yet.');
@@ -235,6 +250,35 @@ test('sidebar page: its buttons reach the server functions and the field is empt
   els.clear.onclick();
   assert.equal(els.status.textContent, 'Key cleared.');
   assert.equal(server.props.size, 0);
+});
+
+test('refresh: OddsRelay formulas are cleared, then written back, even when a clear fails', () => {
+  const { ctx } = addon();
+  let log = [];
+  function sheet(formulas, locked) {
+    const cells = formulas.map((row, r) => row.map((formula, c) => ({
+      formula,
+      clearContent() { if (locked === `${r}${c}`) throw new Error('protected'); log.push(`clear ${r}${c}`); this.formula = ''; },
+      setFormula(f) { log.push(`set ${r}${c}`); this.formula = f; },
+    })));
+    ctx.SpreadsheetApp.getActiveSheet = () => ({ getDataRange: () => ({
+      getFormulas: () => cells.map((row) => row.map((x) => x.formula)),
+      getCell: (r, c) => cells[r - 1][c - 1],
+    }) });
+    return cells;
+  }
+  ctx.SpreadsheetApp.flush = () => log.push('flush');
+  const formulas = [['=ODDSRELAY_SPORTS()', '', '=SUM(1)'], ['', '=oddsrelay_bookmakers()', '']];
+  const cells = sheet(formulas);
+  ctx.refreshFormulas();
+  assert.deepEqual(log, ['clear 00', 'clear 11', 'flush', 'set 00', 'set 11']);
+  assert.deepEqual(cells.map((row) => row.map((x) => x.formula)), formulas);
+
+  log = [];
+  const locked = sheet([['=ODDSRELAY_SPORTS()', '=ODDSRELAY_BOOKMAKERS()']], '01');
+  assert.throws(() => ctx.refreshFormulas(), /protected/);
+  assert.deepEqual(log, ['clear 00', 'set 00']);
+  assert.equal(locked[0][0].formula, '=ODDSRELAY_SPORTS()');
 });
 
 test('manifest, menu and source: narrow scopes, one host, real handlers, no logging', () => {

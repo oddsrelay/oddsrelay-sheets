@@ -6,7 +6,6 @@
 
 const KEY_PROPERTY = 'ODDSRELAY_KEY';
 const CACHE_SECONDS = 60;
-const CACHE_MAX_CHARS = 100000; // CacheService keeps at most 100 KB under one key
 const MAX_RETRY_WAIT_S = 5; // a formula has 30 seconds in all, so only a short Retry-After is waited out
 const SPORTS_BUDGET_MS = 20000;
 
@@ -39,7 +38,8 @@ function saveKey(value) {
   } catch (e) {
     status = 0;
   }
-  if (status === 401) return redact_(errorMessage_(status, text), key);
+  // 401: not a working key. 403 on this route: a browser key, which cannot be used from Sheets.
+  if (status === 401 || status === 403) return 'Key not saved. ' + redact_(errorMessage_(status, text), key);
   PropertiesService.getUserProperties().setProperty(KEY_PROPERTY, key);
   if (status === 200) return 'Key saved. The API accepted it.';
   if (status === 0) return 'Key saved, but the API could not be reached to check it.';
@@ -65,9 +65,14 @@ function refreshFormulas() {
       if (/ODDSRELAY_/i.test(formula)) found.push({ cell: range.getCell(r + 1, c + 1), formula: formula });
     });
   });
-  found.forEach(function (f) { f.cell.clearContent(); });
-  SpreadsheetApp.flush();
-  found.forEach(function (f) { f.cell.setFormula(f.formula); });
+  // Every cell cleared is written back, even when a later clear (a protected cell, say) or the flush throws.
+  const cleared = [];
+  try {
+    found.forEach(function (f) { f.cell.clearContent(); cleared.push(f); });
+    SpreadsheetApp.flush();
+  } finally {
+    cleared.forEach(function (f) { f.cell.setFormula(f.formula); });
+  }
 }
 
 /**
@@ -134,8 +139,8 @@ function getJson_(path, params, cap) {
   // The script cache is shared by everyone using the add-on, so entries are keyed on a hash of key and URL:
   // each key sees only its own results, and the key itself is never stored.
   const cache = CacheService.getScriptCache();
-  const id = 'or1:' + hex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, key + ' ' + url,
-    Utilities.Charset.UTF_8));
+  const id = 'or1:' + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,
+    key + ' ' + url, Utilities.Charset.UTF_8));
   const hit = cache.get(id);
   if (hit) return JSON.parse(hit);
   if (cap !== null) {
@@ -144,12 +149,10 @@ function getJson_(path, params, cap) {
     if (refusal) throw new Error(refusal);
   }
   const text = request_(url, key);
-  if (text.length <= CACHE_MAX_CHARS) {
-    try {
-      cache.put(id, text, CACHE_SECONDS);
-    } catch (e) {
-      // Caching is best effort: a reply over the size limit is just not kept.
-    }
+  try {
+    cache.put(id, text, CACHE_SECONDS);
+  } catch (e) {
+    // Caching is best effort: a reply over CacheService's size limit is just not kept.
   }
   return JSON.parse(text);
 }
