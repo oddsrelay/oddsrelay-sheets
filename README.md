@@ -30,10 +30,14 @@ A [template spreadsheet](https://docs.google.com/spreadsheets/d/1mTlpfDzyQO6CRlq
 with the script already in it skips the steps above: open the link and choose **Make a copy**. The copy and its
 script are yours, and the first run asks for the same permissions.
 
+## Get a key
+
+Sign up at [app.oddsrelay.io/signup](https://app.oddsrelay.io/signup) and copy your key from the dashboard.
+Free gives you 50,000 tokens for 14 days from sign-up, with no card, then no tokens until you choose a plan, on the same key. [Plans and token prices](https://oddsrelay.io/pricing).
+
 ## Your API key
 
-Sign up at [app.oddsrelay.io](https://app.oddsrelay.io/signup) and copy your key from the dashboard. In the
-spreadsheet, choose **Extensions > OddsRelay > Set API key**, paste it and press **Save key**. The add-on checks the
+In the spreadsheet, choose **Extensions > OddsRelay > Set API key**, paste it and press **Save key**. The add-on checks the
 key with one call to `/v2/usage`, which costs no tokens, and does not save a key the API refuses. A browser key is
 tied to one website and cannot be used here, so save a server key.
 
@@ -136,6 +140,16 @@ node --test test/sheets.test.js
 ```
 
 With clasp, use `src/` as the root directory (not tried yet).
+
+## More from OddsRelay
+
+- [oddsrelay-python](https://github.com/oddsrelay/oddsrelay-python): the Python client, `pip install oddsrelay`
+- [oddsrelay-js](https://github.com/oddsrelay/oddsrelay-js): the JavaScript and TypeScript client, `npm install oddsrelay`
+- [oddsrelay-r](https://github.com/oddsrelay/oddsrelay-r): the R client
+- [oddsrelay-mcp](https://github.com/oddsrelay/oddsrelay-mcp): an MCP server that gives Claude, Cursor and other AI assistants read access, with a token cap
+- [examples](https://github.com/oddsrelay/examples): short programs to copy, one folder each
+- [Libraries and tools](https://oddsrelay.io/docs/libraries), the [docs](https://oddsrelay.io/docs), the [API reference](https://oddsrelay.io/docs/reference) and the [OpenAPI file](https://api.oddsrelay.io/v2/openapi.json)
+- Contact: hello@oddsrelay.io
 
 ## License
 
