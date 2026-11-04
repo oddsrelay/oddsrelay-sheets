@@ -62,7 +62,7 @@ Each formula returns a table with a header row, which fills the empty cells belo
 blank (`""`) to skip it. `soccer` is the API's key for football.
 
 ```
-=ODDSRELAY_ODDS("standard", "soccer_epl", "bet365,ladbrokes", "betfair_exchange", "h2h")
+=ODDSRELAY_ODDS("standard", "soccer_english_premier_league", "bet365,ladbrokes", "betfair_exchange", "h2h")
 =ODDSRELAY_ODDS("each-way", "horse_racing", A2:A6)
 =ODDSRELAY_ODDS("bog", "horse_racing", "", "", "", B1)
 ```
