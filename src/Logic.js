@@ -40,12 +40,21 @@ function boardRequest_(type, filters) {
   if (BOARD_TYPES.indexOf(t) < 0) {
     throw new Error('OddsRelay: unknown board type. Use standard, 2up, dutching, each-way, extra-place or bog.');
   }
-  const params = {};
+  // The matched boards are served for the UK & Ireland only; naming it lets an account with another home region ask.
+  const params = { region: 'uk' };
   ['sports', 'bookmakers', 'exchanges', 'markets'].forEach(function (name) {
     const v = listParam_(filters[name]);
     if (v) params[name] = v;
   });
   return { path: '/v2/odds/' + t, params: params };
+}
+
+/** An optional region argument as a query: blank gives none (the API then reads uk). Never echoes what was typed. */
+function regionParam_(value) {
+  const r = String(cell_(value)).trim().toLowerCase();
+  if (!r) return {};
+  if (!/^[a-z]+$/.test(r)) throw new Error('OddsRelay: region must be one code, such as uk or us.');
+  return { region: r };
 }
 
 /** The token cap for one formula: blank means the default. */

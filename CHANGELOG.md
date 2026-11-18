@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- `ODDSRELAY_ODDS` names `region=uk` on every call: the matched boards are served for the UK & Ireland only, and an
+  account whose home region is another one is refused when no region is sent.
+- `ODDSRELAY_SPORTS` and `ODDSRELAY_BOOKMAKERS` take an optional region code, to list another region's keys.
+- README: the API serves 20 more regions; these formulas read the matched boards. No raw odds formula yet.
+
 ## 0.1.0 (unreleased)
 
 The first version. Tested in Node with Google's services stubbed; not yet run in Google.

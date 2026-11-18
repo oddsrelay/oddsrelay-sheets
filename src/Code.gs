@@ -96,15 +96,17 @@ function ODDSRELAY_ODDS(type, sports, bookmakers, exchanges, markets, max_tokens
 /**
  * Sport and competition keys, and the market keys each one carries.
  *
+ * @param {string} region Optional region code such as us. Blank for the UK & Ireland.
  * @return Rows with a header.
  * @customfunction
  */
-function ODDSRELAY_SPORTS() {
+function ODDSRELAY_SPORTS(region) {
+  const query = regionParam_(region);
   const rows = [SPORTS_HEADER];
   const deadline = Date.now() + SPORTS_BUDGET_MS;
   let cursor = null;
   do {
-    const body = getJson_('/v2/sports', cursor ? { cursor: cursor } : {}, null);
+    const body = getJson_('/v2/sports', cursor ? { region: query.region, cursor: cursor } : query, null);
     Array.prototype.push.apply(rows, sportsRows_(body));
     cursor = body.meta && body.meta.next_cursor;
   } while (cursor && Date.now() < deadline);
@@ -115,11 +117,12 @@ function ODDSRELAY_SPORTS() {
 /**
  * Bookmaker and exchange keys, for the bookmakers and exchanges arguments of ODDSRELAY_ODDS.
  *
+ * @param {string} region Optional region code such as us. Blank for the UK & Ireland, the region ODDSRELAY_ODDS reads.
  * @return Rows with a header.
  * @customfunction
  */
-function ODDSRELAY_BOOKMAKERS() {
-  return [BOOKMAKERS_HEADER].concat(bookmakerRows_(getJson_('/v2/bookmakers', {}, null)));
+function ODDSRELAY_BOOKMAKERS(region) {
+  return [BOOKMAKERS_HEADER].concat(bookmakerRows_(getJson_('/v2/bookmakers', regionParam_(region), null)));
 }
 
 // In a formula this is the spreadsheet owner's key: Google gives custom functions the owner's user properties.

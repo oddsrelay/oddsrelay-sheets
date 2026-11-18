@@ -69,7 +69,7 @@ test('board request: ranges and comma lists become query values; aliases pass', 
   const req = ctx.boardRequest_(' Each_Way ', { sports: [['horse_racing'], ['']], bookmakers: 'bet365, ladbrokes,' });
   assert.equal(req.path, '/v2/odds/each_way');
   assert.equal(ctx.buildUrl_(req.path, req.params),
-    'https://api.oddsrelay.io/v2/odds/each_way?sports=horse_racing&bookmakers=bet365%2Cladbrokes');
+    'https://api.oddsrelay.io/v2/odds/each_way?region=uk&sports=horse_racing&bookmakers=bet365%2Cladbrokes');
   assert.throws(() => ctx.boardRequest_('sheets-typo-value', {}), (e) => !e.message.includes('sheets-typo'));
   assert.equal(ctx.maxTokensParam_(''), vm.runInContext('DEFAULT_MAX_TOKENS', ctx));
   assert.throws(() => ctx.maxTokensParam_('lots'), /max_tokens/);
@@ -111,8 +111,8 @@ test('a board formula quotes first, then fetches with the key in the header only
   const rows = ctx.ODDSRELAY_ODDS('bog', 'horse_racing', [['ladbrokes'], ['betfred']], '', '', '');
   assert.equal(rows.length, 5);
   assert.deepEqual(calls.map((c) => c.url), [
-    'https://api.oddsrelay.io/v2/odds/bog?sports=horse_racing&bookmakers=ladbrokes%2Cbetfred&quote=true',
-    'https://api.oddsrelay.io/v2/odds/bog?sports=horse_racing&bookmakers=ladbrokes%2Cbetfred',
+    'https://api.oddsrelay.io/v2/odds/bog?region=uk&sports=horse_racing&bookmakers=ladbrokes%2Cbetfred&quote=true',
+    'https://api.oddsrelay.io/v2/odds/bog?region=uk&sports=horse_racing&bookmakers=ladbrokes%2Cbetfred',
   ]);
   for (const c of calls) {
     assert.equal(c.options.headers.Authorization, `Bearer ${KEY}`);
@@ -123,7 +123,7 @@ test('a board formula quotes first, then fetches with the key in the header only
 
   const all = addon({ reply: (url) => response(200, url.includes('quote=true') ? quote : board) });
   all.ctx.ODDSRELAY_ODDS('standard', 'soccer_epl', 'bet365,ladbrokes', 'betfair_exchange', 'h2h', '');
-  assert.equal(all.calls[0].url, 'https://api.oddsrelay.io/v2/odds/standard?sports=soccer_epl'
+  assert.equal(all.calls[0].url, 'https://api.oddsrelay.io/v2/odds/standard?region=uk&sports=soccer_epl'
     + '&bookmakers=bet365%2Cladbrokes&exchanges=betfair_exchange&markets=h2h&quote=true');
 });
 
@@ -203,8 +203,13 @@ test('gzip bodies are decompressed; sports follow the cursor', () => {
 });
 
 test('bookmakers formula', () => {
-  const { ctx } = addon({ reply: () => response(200, fixture('v2-bookmakers.catalogue.json')) });
+  const { ctx, calls } = addon({ reply: () => response(200, fixture('v2-bookmakers.catalogue.json')) });
   assert.deepEqual(plain(ctx.ODDSRELAY_BOOKMAKERS()).slice(0, 2), [['Key', 'Name', 'Exchange'], ['7bet', '7bet', false]]);
+  assert.ok(!calls[0].url.includes('region'));
+  // An optional region on the two list formulas; anything but one code is refused without echoing it.
+  ctx.ODDSRELAY_BOOKMAKERS(' US ');
+  assert.match(calls.at(-1).url, /\/v2\/bookmakers\?region=us$/);
+  assert.throws(() => ctx.ODDSRELAY_SPORTS('us,global'), (e) => /region must be one code/.test(e.message) && !e.message.includes('global'));
 });
 
 test('sidebar: a refused key is not saved; status never shows the key', () => {

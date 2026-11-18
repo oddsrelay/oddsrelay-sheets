@@ -1,7 +1,8 @@
 # OddsRelay for Google Sheets
 
 Formulas that bring data from the [OddsRelay API](https://oddsrelay.io/docs) into a Google Sheet: matched boards,
-sport keys and bookmaker keys. The API serves bookmaker and exchange odds for the UK & Ireland. Each person keeps
+sport keys and bookmaker keys. The API serves bookmaker odds for the UK & Ireland and 20 more regions; these
+formulas read the matched boards, which cover UK and Irish bookmakers beside exchange lay prices. Each person keeps
 their own API key in their own Apps Script settings, never in the spreadsheet.
 
 Tested in Google Sheets on 9 Oct 2026: the three formulas, the sidebar and the token cap. If something misbehaves,
@@ -52,10 +53,14 @@ not show it again. **Clear key** removes it.
 | Formula | Route | Returns |
 |---|---|---|
 | `=ODDSRELAY_ODDS(type, sports, bookmakers, exchanges, markets, max_tokens)` | `GET /v2/odds/{type}` | A matched board, one row per back or lay offer |
-| `=ODDSRELAY_SPORTS()` | `GET /v2/sports` | Sport and competition keys, and the market keys each one carries |
-| `=ODDSRELAY_BOOKMAKERS()` | `GET /v2/bookmakers` | Bookmaker and exchange keys |
+| `=ODDSRELAY_SPORTS(region)` | `GET /v2/sports` | Sport and competition keys, and the market keys each one carries |
+| `=ODDSRELAY_BOOKMAKERS(region)` | `GET /v2/bookmakers` | Bookmaker and exchange keys |
 
 Each formula returns a table with a header row, which fills the empty cells below and to its right.
+
+`ODDSRELAY_ODDS` always reads the UK & Ireland (`region=uk`), the one region the matched boards are served for.
+`region` on the two list formulas is optional: leave it out for the UK & Ireland, or give one code such as `"us"`
+to list another region's keys. There is no formula for raw odds, which is what the other regions carry, yet.
 
 `type` is `standard`, `2up`, `dutching`, `each-way`, `extra-place` or `bog`. The four filters take keys from
 `ODDSRELAY_SPORTS` and `ODDSRELAY_BOOKMAKERS`, comma-separated in one string or as a range of cells. Leave a filter
